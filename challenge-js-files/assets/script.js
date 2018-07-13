@@ -1,91 +1,139 @@
+// AJAX ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 var sauvegardeTitre = [];
 let xhr = new XMLHttpRequest;
 xhr.open('GET', 'https://inside.becode.org/api/v1/data/random.json', true)
 xhr.onload = function () {
   if (this.status === 200) {
     let data = JSON.parse(xhr.responseText);
-    getFromApi(data);
+    for (i = 0; i < data.length; i++){
+      sauvegardeTitre.push ({
+           "premiereData": data[i][0],
+           "deuxiemeData": data[i][1]
+       });
+     }
+       myChart = new dimple.chart(dimple.newSvg("#firstHeading", "100%", 550), sauvegardeTitre);
+       myChart.setBounds(35, 60, "90%", 450);
+       var x = myChart.addCategoryAxis("x", "premiereData");
+       x.addOrderRule("premiereData", false);
+       var y = myChart.addMeasureAxis("y", "deuxiemeData");
+       y.ticks = 15;
+       myChart.addSeries(null, dimple.plot.bar);
+       myChart.draw();
+       updateGraph()
   } else {
     alert("ERROR");
   }
 };
 xhr.send();
 
-function getFromApi(data) {
-  console.log(data);
+console.log(sauvegardeTitre);
+
+function updateGraph(){
+    xhr.open('GET', 'https://inside.becode.org/api/v1/data/random.json', true)
+    xhr.onload = function () {
+      if (this.status === 200) {
+        let data = JSON.parse(xhr.responseText);
+        for (i = 0; i < data.length; i++){
+          sauvegardeTitre.push ({
+               "premiereData": data[i][0],
+               "deuxiemeData": data[i][1]
+           });
+        }
+        myChart.data = sauvegardeTitre;
+        myChart.draw();
+        setTimeout(function(){updateGraph()}, 1000);
+        }
+    }
+    xhr.send()
 }
 
-var sauvegardeTableau1 = [];
-tableauDoc1 = document.getElementById("table1");
-tableau1 = tableauDoc1.getElementsByTagName("td");
-for (var i = 0; i < tableau1.length; i++) {
-  sauvegardeTableau1.push(tableau1[i].innerHTML);
+
+// GRAPH 1 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+var div = document.createElement("div");
+div.id = "graph1";
+var container = document.getElementById("mw-content-text");
+container.insertBefore(div, table1);
+
+let data1 = [];
+let table = document.getElementById('table1');
+let years = table.getElementsByTagName('tr')[1].getElementsByTagName('th');
+let yearsArray = [];
+for(let i = 2; i < years.length; i++) {
+  let content = years[i].innerHTML;
+  yearsArray.push(content);
 }
- console.log(sauvegardeTableau1);
 
-var sauvegardeTableau2 = [];
-tableauDoc2 = document.getElementById("table2");
-tableau2 = tableauDoc2.getElementsByTagName("td");
-for (var i = 0; i < tableau2.length; i++) {
-  sauvegardeTableau2.push(tableau2[i].innerHTML);
+let rows = table.getElementsByTagName('tr');
+
+for(let i = 2; i < rows.length; i++) {
+  let cells = rows[i].getElementsByTagName('td');
+
+  for (let j = 0; j < cells.length; j++) {
+    if(j === 0) {
+      var pays = cells[j].innerHTML;
+    }
+    else {
+      if (cells[j].innerHTML != ":") {
+        data1.push({data1:cells[j].innerHTML, pays:pays, year:yearsArray[j-1]});
+      }
+    }
+  }
+
 }
- console.log(sauvegardeTableau2);
 
-// var svg = dimple.newSvg("#firstHeading", 800, 600);
-// var data = [
-//   { "Word":"Hello", "Awesomeness":2000 },
-//   { "Word":"World", "Awesomeness":3000 },
-// ];
-// var chart = new dimple.chart(svg, data);
-// chart.addCategoryAxis("x", "Word");
-// chart.addMeasureAxis("y", "Awesomeness");
-// chart.addSeries(null, dimple.plot.bar);
-// chart.draw();
-//
-//
-// var svg = dimple.newSvg(".graph2", 800, 600);
-// var data = [
-//   { "Word":"Hello", "Awesomeness":2000 },
-//   { "Word":"World", "Awesomeness":3000 },
-// ];
-// var chart = new dimple.chart(svg, data);
-// chart.addCategoryAxis("x", "Word");
-// chart.addMeasureAxis("y", "Awesomeness");
-// chart.addSeries(null, dimple.plot.bar);
-// chart.draw();
-//
-// var svg = dimple.newSvg(".graph3", 800, 600);
-// var data = [
-//   { "Word":"Hello", "Awesomeness":2000 },
-//   { "Word":"World", "Awesomeness":3000 },
-// ];
-// var chart = new dimple.chart(svg, data);
-// chart.addCategoryAxis("x", "Word");
-// chart.addMeasureAxis("y", "Awesomeness");
-// chart.addSeries(null, dimple.plot.bar);
-// chart.draw();
+console.log(data1);
 
-var svg = dimple.newSvg("#graph1", 590, 400);
-  d3.tsv("/data/example_data.tsv", function (data) {
-    data = dimple.filterData(data, "Owner", ["Aperture", "Black Mesa"])
-    var myChart = new dimple.chart(svg, data);
-    myChart.setBounds(60, 30, 430, 330);
-    var x = myChart.addCategoryAxis("x", ["Owner", "Month"]);
-    x.addGroupOrderRule("Date");
-    myChart.addMeasureAxis("y", "Unit Sales");
-    var s = myChart.addSeries(["Brand"], dimple.plot.line);
-    s.barGap = 0.05;
-    myChart.addLegend(510, 20, 100, 300, "left");
-    myChart.draw();
-  });
+var svg = dimple.newSvg("#graph1", "100%", 450);
+var myChart = new dimple.chart(svg, data1);
+myChart.setBounds(30, 110, "90%", 305);
+var x = myChart.addCategoryAxis("x", ["year", "pays"]);
+var y = myChart.addMeasureAxis("y", "data1");
+y.ticks = 15;
+myChart.addSeries("pays", dimple.plot.line);
+myChart.addLegend(10, 10, "100%", 200);
+myChart.draw();
 
-  var svg = dimple.newSvg("#graph2  ", 590, 400);
-d3.tsv("/data/example_data.tsv", function (data) {
-  var myChart = new dimple.chart(svg, data);
-  myChart.setBounds(65, 45, 505, 315)
-  myChart.addCategoryAxis("x", ["Price Tier", "Channel"]);
-  myChart.addPctAxis("y", "Unit Sales");
-  myChart.addSeries("Owner", dimple.plot.bar);
-  myChart.addLegend(200, 10, 380, 20, "right");
-  myChart.draw();
-});
+// GRAPH 2 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+var div = document.createElement("div");
+div.id = "graph2";
+var container = document.getElementById("mw-content-text");
+container.insertBefore(div, table2);
+
+let data2 = [];
+let tableN2 = document.getElementById('table2');
+let years2 = tableN2.getElementsByTagName('tr')[0].getElementsByTagName('th');
+let yearsArray2 = [];
+for(let i = 2; i < years2.length; i++) {
+  let content2 = years2[i].innerHTML;
+  yearsArray2.push(content2);
+}
+
+let rows2 = tableN2.getElementsByTagName('tr');
+
+for(let i = 0; i < rows2.length; i++) {
+  let cells2 = rows2[i].getElementsByTagName('td');
+
+  for (let j = 0; j < cells2.length; j++) {
+    if(j === 0) {
+      var pays2 = cells2[j].innerHTML;
+    }
+    else {
+      data2.push({data2:cells2[j].innerHTML, pays2:pays2, year2:yearsArray2[j-1]});
+    }
+  }
+}
+
+console.log(data2);
+
+var myChart = new dimple.chart(dimple.newSvg("#graph2" , "100%", 550), data2);
+myChart.setBounds(35, 180, "90%", 305);
+var x = myChart.addCategoryAxis("x", ["year2", "pays2"]);
+x.addOrderRule("year2", false);
+var y = myChart.addMeasureAxis("y", "data2");
+y.ticks = 15;
+myChart.addSeries("pays2", dimple.plot.bar);
+myChart.addLegend(10, 10, "100%", 200);
+myChart.draw();
